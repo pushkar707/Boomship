@@ -19,8 +19,6 @@ const publisher = new Redis({
     port: 6379,
 })
 
-console.log(process.env.HOSTNAME);
-
 const PROJECT_ID = process.env.PROJECT_ID
 const redisChannel = "logs:" + PROJECT_ID
 console.log(PROJECT_ID);

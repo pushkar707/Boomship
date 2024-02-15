@@ -3,7 +3,9 @@ import Docker from "dockerode"
 import path from "path"
 import {generateSlug} from "random-word-slugs";
 import Redis from "ioredis";
-import { copyFilesFromContainer } from "./utils";
+import { copyFilesFromContainer, uploadToS3 } from "./utils";
+import dotenv from "dotenv"
+dotenv.config()
 
 const subscriber = new Redis({
     host: '127.0.0.1',
@@ -23,6 +25,8 @@ subscriber.on("message", async(channel, message) => {
     await copyFilesFromContainer(container,  '/home/app/output/dist', path.join(__dirname, "/outputs/"+PROJECT_ID));
     await container.stop();
     await container.remove()
+
+    await uploadToS3(PROJECT_ID)
 })
 
 const app = express();
