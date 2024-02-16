@@ -19,11 +19,8 @@ app.use((req, res) => {
 
 })
 
-proxy.on('proxyReq', (proxyReq, req, res) => {
-    console.log("FSDxfcsdfcdsx");
-    
+proxy.on('proxyReq', (proxyReq, req, res) => {    
     const url = req.url;
-    console.log(url);
     
     if (url === '/')
         proxyReq.path += 'index.html'
