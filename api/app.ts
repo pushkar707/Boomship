@@ -37,6 +37,7 @@ app.use(express.json());
 app.post("/project", async(req: Request,res: Response) => {
     const {gitUrl,buildCommand, startCommand, env} = req.body;
 
+    // In real-world, I would have a db containing all project id, and hence I will check the db to make sure slug generated is unique
     const projectId = generateSlug();
 
     const containerOptions = {
