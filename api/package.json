@@ -19,5 +19,17 @@
     "@types/mime-types": "^2.1.4",
     "@types/socket.io": "^3.0.2",
     "@types/tar-fs": "^2.0.4"
-  }
+  },
+  "name": "api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "nodemon app.ts",
+    "start": "node dist/app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }
