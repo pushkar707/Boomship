@@ -24,11 +24,10 @@ const redisChannel = "logs:" + PROJECT_ID
 
 async function init() {
     publisher.publish(redisChannel, "Finished cloning repository");
-    publisher.publish(redisChannel, "Executing script.js");
     console.log("Executing script.js");
     const outDirPath = path.join(__dirname, "output")
 
-    const p = exec(`cd ${outDirPath + process.env.BASE_DIRECTORY} && npm install && ${process.env.BUILD_COMMAND || "npm run build"}`)
+    const p = exec(`cd ${outDirPath} && npm install && ${process.env.BUILD_COMMAND || "npm run build"}`)
 
     p.stdout.on("data" , (data) => {
         publisher.publish(redisChannel, data.toString());

@@ -63,9 +63,16 @@ app.post("/project", async(req: Request,res: Response) => {
     // In real-world, I would have a db containing all project id, and hence I will check the db to make sure slug generated is unique
     const projectId = generateSlug();
 
+    const envValue = [`GIT_REPOSITORY_URL=${gitUrl}`, `PROJECT_ID=${projectId}`, `BUILD_COMMAND=${buildCommand}`, `BASE_DIRECTORY=${baseDirectory}`]
+
+    env && Object.keys(env).forEach(key => {
+        envValue.push(`${key}=${env[key]}`)
+    });
+    
+
     const containerOptions = {
         Image: "vercel-clone-builder-img",
-        Env: [`GIT_REPOSITORY_URL=${gitUrl}`, `PROJECT_ID=${projectId}`, `BUILD_COMMAND=${buildCommand}`, `BASE_DIRECTORY=${baseDirectory}`],
+        Env: envValue,
     }
 
     const container = await docker.createContainer(containerOptions)
