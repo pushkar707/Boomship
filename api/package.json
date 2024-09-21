@@ -25,7 +25,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "test": "nodemon app.ts",
+    "dev": "nodemon app.ts",
     "start": "node dist/app.js"
   },
   "keywords": [],

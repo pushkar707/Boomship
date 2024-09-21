@@ -4,6 +4,8 @@ import axios from "axios";
 import { FormEvent, useState } from "react";
 
 export default function Home() {
+  console.log(window.location.hostname);
+
 
   const [gitUrl, setGitUrl] = useState("")
   const [buildCommand, setBuildCommand] = useState("npm run build");
@@ -11,21 +13,21 @@ export default function Home() {
 
   const [envKeys, setenvKeys] = useState({});
 
-  const handleSubmit = async (e:FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    
-    const res = await axios.post(process.env.NEXT_PUBLIC_API_URL + "/project",{gitUrl, buildCommand, baseDirectory, env:{PORT_TEST:"80002"}})
+
+    const res = await axios.post(process.env.NEXT_PUBLIC_API_URL + "/project", { gitUrl, buildCommand, baseDirectory, env: envKeys})
     const data = await res.data
     window.location.href = "/deployment/" + data.projectId
   }
 
   return (
-    <Container component={"form"} onSubmit={handleSubmit} sx={{p: 4, height:"100vh", width: "100vw", display:"flex",  justifyContent:"center", alignItems:"center", gap:3, flexDirection:"column" }}>
-      <Box sx={{display:"flex", flexDirection:"column", gap:3, width:{xs: "100%", md: "50%",} }} >
+    <Container component={"form"} onSubmit={handleSubmit} sx={{ p: 4, height: "100vh", width: "100vw", display: "flex", justifyContent: "center", alignItems: "center", gap: 3, flexDirection: "column" }}>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3, width: { xs: "100%", md: "50%", } }} >
         <TextField
           label="Enter React Repository URL"
           variant="outlined"
-          sx={{width:"100%" }}
+          sx={{ width: "100%" }}
           value={gitUrl}
           onChange={(e) => setGitUrl(e.target.value)}
         />
@@ -33,7 +35,7 @@ export default function Home() {
         <TextField
           label="Enter Build Command"
           variant="outlined"
-          sx={{width:"100%" }}
+          sx={{ width: "100%" }}
           value={buildCommand}
           onChange={(e) => setBuildCommand(e.target.value)}
         />
@@ -41,7 +43,7 @@ export default function Home() {
         <TextField
           label="Enter Base Directory"
           variant="outlined"
-          sx={{width:"100%" }}
+          sx={{ width: "100%" }}
           value={baseDirectory}
           onChange={(e) => setBaseDirectory(e.target.value)}
         />
@@ -49,31 +51,31 @@ export default function Home() {
         <Typography>
           Environment Variables
         </Typography>
-        <Box sx={{display:"flex", columnGap:1}} >
+        <Box sx={{ display: "flex", columnGap: 1 }} >
           <TextField
             label="Enter Key"
             variant="outlined"
-            // value={baseDirectory}
-            // onChange={(e) => setBaseDirectory(e.target.value)}
+          // value={baseDirectory}
+          // onChange={(e) => setBaseDirectory(e.target.value)}
           />
 
           <TextField
             label="Enter Value"
             variant="outlined"
-            // value={baseDirectory}
-            // onChange={(e) => setBaseDirectory(e.target.value)}
+          // value={baseDirectory}
+          // onChange={(e) => setBaseDirectory(e.target.value)}
           />
 
           <Button variant="outlined" color="primary" size="small" >
             Add
-          </Button>          
+          </Button>
         </Box>
 
-        <Button sx={{width:"fit-content"}} type="submit" variant="contained" color="primary" size="large" >
+        <Button sx={{ width: "fit-content" }} type="submit" variant="contained" color="primary" size="large" >
           Deploy
         </Button>
       </Box>
-      
+
     </Container>
   );
 }
