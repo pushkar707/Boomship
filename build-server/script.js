@@ -2,17 +2,6 @@ const { exec } = require("child_process")
 const path = require("path");
 const fs = require("fs");
 const Redis = require("ioredis");
-// const {S3Client, PutObjectCommand} = require("@aws-sdk/client-s3")
-// const mime = require("mime-types")
-// require("dotenv").config()
-
-// const s3Client = new S3Client({
-//     region: process.env.AWS_BUCKET_REGION,
-//     credentials:{
-//         accessKeyId: process.env.AWS_ACCESS_KEY,
-//         secretAccessKey:  process.env.AWS_SECRET_KEY
-//     }
-// })
 
 const publisher = new Redis({
     host: '192.168.0.104',

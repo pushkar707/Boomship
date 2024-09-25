@@ -67,8 +67,8 @@ app.post("/project", async (req: Request, res: Response) => {
 
     const envValue = [`GIT_REPOSITORY_URL=${gitUrl}`, `PROJECT_ID=${projectId}`, `BUILD_COMMAND=${buildCommand}`, `BASE_DIRECTORY=${baseDirectory}`]
 
-    env && Object.keys(env).forEach(key => {
-        envValue.push(`${key}=${env[key]}`)
+    env && env.forEach(({ key, value }: { key: string, value: string }) => {
+        envValue.push(`${key}=${value}`)
     });
 
 
@@ -89,3 +89,10 @@ app.post("/project", async (req: Request, res: Response) => {
 app.listen(8000, () => {
     console.log("Listening on port 8000");
 })
+
+// TODO:
+// Add a limit of number of files that cn be uploaded to AWS S3 at once, like 300/s
+// error handling including deployment status
+// Add cloudfront for reverse proxy, instead of having a reverse-proxy nodejs server
+// zod vaalidations
+// avoid websockets unless very much needed 

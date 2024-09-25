@@ -11,12 +11,12 @@ export default function Home() {
   const [buildCommand, setBuildCommand] = useState("npm run build");
   const [baseDirectory, setBaseDirectory] = useState("/");
 
-  const [envKeys, setenvKeys] = useState({});
+  const [envKeys, setenvKeys] = useState<{ key: string, value: string }[]>([]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
 
-    const res = await axios.post(process.env.NEXT_PUBLIC_API_URL + "/project", { gitUrl, buildCommand, baseDirectory, env: envKeys})
+    const res = await axios.post(process.env.NEXT_PUBLIC_API_URL + "/project", { gitUrl, buildCommand, baseDirectory, env: envKeys })
     const data = await res.data
     window.location.href = "/deployment/" + data.projectId
   }
@@ -51,25 +51,38 @@ export default function Home() {
         <Typography>
           Environment Variables
         </Typography>
-        <Box sx={{ display: "flex", columnGap: 1 }} >
+
+        {Array.from({ length: envKeys.length }).map((_, index) => <Box sx={{ display: "flex", gap: '16px' }} >
           <TextField
             label="Enter Key"
             variant="outlined"
-          // value={baseDirectory}
-          // onChange={(e) => setBaseDirectory(e.target.value)}
+            sx={{ width: '100%' }}
+            value={envKeys[index].key}
+            required
+            onChange={(e) => setenvKeys(prev => {
+              const newArr = [...prev]
+              newArr[index].key = e.target.value
+              return newArr
+            })}
           />
 
           <TextField
             label="Enter Value"
             variant="outlined"
-          // value={baseDirectory}
-          // onChange={(e) => setBaseDirectory(e.target.value)}
+            sx={{ width: '100%' }}
+            value={envKeys[index].value}
+            required
+            onChange={(e) => setenvKeys(prev => {
+              const newArr = [...prev]
+              newArr[index].value = e.target.value
+              return newArr
+            })}
           />
-
-          <Button variant="outlined" color="primary" size="small" >
-            Add
-          </Button>
         </Box>
+        )}
+        <Button variant="outlined" color="primary" size="small" onClick={() => setenvKeys(prev => [...prev, { key: '', value: '' }])}>
+          Add
+        </Button>
 
         <Button sx={{ width: "fit-content" }} type="submit" variant="contained" color="primary" size="large" >
           Deploy

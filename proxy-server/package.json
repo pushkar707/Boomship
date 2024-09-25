@@ -5,7 +5,7 @@
   "main": "script.js",
   "scripts": {
     "build": "tsc",
-    "test": "nodemon script.ts",
+    "dev": "nodemon script.ts",
     "start": "node dist/script.js"
   },
   "keywords": [],
