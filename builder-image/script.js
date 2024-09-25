@@ -29,10 +29,10 @@ async function init() {
     })
     
     p.stdout.on("close" , async () => {
-        publisher.publish(redisChannel, "Build Completed");
+        await publisher.publish(redisChannel, "Build Completed");
         console.log("Build Completed");
-        publisher.publish("builds", JSON.stringify({PROJECT_ID, containerId: process.env.HOSTNAME}))
-        setTimeout(() => {console.log("Timer completed")}, 100000);
+        await publisher.lpush("builds", JSON.stringify({PROJECT_ID, containerId: process.env.HOSTNAME}))
+        p.stdin.resume() // to allow workers to copy files before container closes
     })
 }
 

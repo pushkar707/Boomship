@@ -1,0 +1,26 @@
+{
+  "name": "build-worker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.658.0",
+    "dockerode": "^4.0.2",
+    "dotenv": "^16.4.5",
+    "mime-types": "^2.1.35",
+    "redis": "^4.7.0",
+    "tar-fs": "^3.0.6"
+  },
+  "devDependencies": {
+    "@types/dockerode": "^3.3.31",
+    "@types/mime-types": "^2.1.4",
+    "@types/node": "^22.7.0",
+    "@types/tar-fs": "^2.0.4"
+  }
+}
