@@ -3,19 +3,43 @@ import Docker from "dockerode"
 import dotenv from "dotenv"
 import path from "path"
 import { copyFilesFromContainer, uploadToS3 } from "./utils"
+import axios from "axios"
 dotenv.config()
+
+const API_SERVER = process.env.API_SERVER
+const LOGS_BATCH_SIZE = 100;
 
 const redisClient = createClient({ url: process.env.REDIS_URL })
 const docker = new Docker()
 const init = async () => {
     await redisClient.connect()
-    console.log("BUild server started");
+    console.log("Build server started");
+
+    setInterval(async () => {
+        const replies = await redisClient.multi()
+            .lRange('build-logs', 0, LOGS_BATCH_SIZE - 1)
+            .lTrim('build-logs', LOGS_BATCH_SIZE, -1).exec()
+        const logs = (replies[0] as string[]).map((item: string) => {
+            const currLog = JSON.parse(item)
+            const { deploymentId, log, time } = currLog
+            return { deploymentId: parseInt(deploymentId), log, time: new Date(time) }
+        })
+        console.log(logs);
+
+        logs.length && await axios.post(`${API_SERVER}/api/deployment/logs`, {
+            logs
+        })
+
+    }, 4000);
 
     while (true) {
-        const deployment = await redisClient.lPop("deployments")
+        const deployment = await redisClient.rPop("deployments")
         if (deployment) {
-            const { gitUrl, projectId, buildCommand, baseDirectory, usersEnv }: any = JSON.parse(deployment)
-            const envValue = [`GIT_REPOSITORY_URL=${gitUrl}`, `PROJECT_ID=${projectId}`, `BUILD_COMMAND=${buildCommand}`, `BASE_DIRECTORY=${baseDirectory}`]
+            const { gitUrl, subdomain, buildCommand, baseDirectory, usersEnv, deploymentId }: any = JSON.parse(deployment)
+            axios.patch(`${API_SERVER}/api/deployment/${deploymentId}`, {
+                status: 'PROGRESS'
+            })
+            const envValue = [`GIT_REPOSITORY_URL=${gitUrl}`, `DEPLOYMENT_ID=${deploymentId}`, `API_SERVER=${API_SERVER}`, `SUB_DOMAIN=${subdomain}`, `BUILD_COMMAND=${buildCommand}`, `BASE_DIRECTORY=${baseDirectory}`]
 
             usersEnv && usersEnv.forEach(({ key, value }: { key: string, value: string }) => {
                 envValue.push(`${key}=${value}`)
@@ -31,16 +55,16 @@ const init = async () => {
             console.log("Container started");
         }
 
-        const build = await redisClient.lPop("builds")
+        const build = await redisClient.rPop("builds")
         if (build) {
-            const { PROJECT_ID, containerId } = JSON.parse(build)
+            const { SUB_DOMAIN, containerId } = JSON.parse(build)
 
             const container = await docker.getContainer(containerId);
-            await copyFilesFromContainer(container, '/home/app/output/dist', path.join(__dirname, "/outputs/" + PROJECT_ID));
+            await copyFilesFromContainer(container, '/home/app/output/dist', path.join(__dirname, "/outputs/" + SUB_DOMAIN));
             await container.stop();
-            await container.remove()
+            await container.remove();
 
-            await uploadToS3(PROJECT_ID)
+            await uploadToS3(SUB_DOMAIN)
         }
     }
 }

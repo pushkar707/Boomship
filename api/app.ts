@@ -2,48 +2,16 @@ import express, { Request, Response } from "express"
 import { generateSlug } from "random-word-slugs";
 import Redis from "ioredis";
 import cors from "cors"
-import { Server } from "socket.io"
 import dotenv from "dotenv"
+import PrismaClient from "./utils/PrismaClient";
+import { DeploymentStatus } from "@prisma/client";
 dotenv.config()
-
-const subscriber = new Redis({
-    host: '127.0.0.1',
-    port: 6379,
-})
 
 const redisClient = new Redis({
     host: '127.0.0.1',
     port: 6379,
 })
 
-const io = new Server({
-    cors: {
-        origin: "http://localhost:3000"
-    }
-})
-
-io.on("connection", socket => {
-    socket.on("subscribe", channel => {
-        console.log("subscribed to " + channel);
-
-        socket.join(channel)
-        socket.emit("message", "Creating service at " + channel);
-    })
-})
-
-io.listen(8001)
-
-subscriber.psubscribe("logs:*")
-subscriber.subscribe("builds")
-subscriber.on("pmessage", (pattern, channel, message) => {
-    console.log(channel + ": " + message);
-    io.to(channel).emit("message", message);
-})
-
-subscriber.on("message", async (channel, message) => {
-    // io.to("logs:" + PROJECT_ID).emit("message", "Your Service is live at " + PROJECT_ID + ".localhost:9000")
-
-})
 
 const app = express();
 
@@ -53,15 +21,71 @@ app.use(cors({
 }))
 
 app.post("/project", async (req: Request, res: Response) => {
+    // TODO: Body validations
     const { gitUrl, buildCommand, baseDirectory, env } = req.body;
-
     // In real-world, I would have a db containing all project id, and hence I will check the db to make sure slug generated is unique
-    const projectId = generateSlug();
-    await redisClient.lpush("deployments", JSON.stringify({ projectId, gitUrl, buildCommand, baseDirectory, usersEnv: env }))
-    res.json({ projectId });
+    const subdomain = generateSlug();
+    const project = await PrismaClient.project.create({
+        data: {
+            gitUrl,
+            subdomain,
+            baseDirectory,
+            buildCommand,
+            envObj: JSON.stringify(env)
+        }
+    })
+
+    const deployment = await PrismaClient.deployment.create({
+        data: {
+            status: DeploymentStatus.QUEUE,
+            projectId: project.id
+        }
+    })
+    await redisClient.lpush("deployments", JSON.stringify({ subdomain, gitUrl, deploymentId: deployment.id, buildCommand, baseDirectory, usersEnv: env }))
+    res.json({ status: true, message: 'Project created successfully', subdomain, deploymentId: deployment.id });
 })
 
+app.patch('/api/deployment/:id', async (req: Request, res: Response) => {
+    // TODO: Validation to check status matches prisma enum values
+    const { status } = req.body
+    await PrismaClient.deployment.update({
+        where: { id: parseInt(req.params.id) },
+        data: { status }
+    })
+    return res.json({ status: true, message: `Deployment status updated to ${status}` })
+})
 
+app.get("/api/deployment/:id/logs", async (req: Request, res: Response) => {
+    const { id } = req.params
+    const { toContinue, time } = req.query as { toContinue: string, time: string }
+
+    const whereQuery: any = { deploymentId: parseInt(id) }
+    if (toContinue == "true") {
+        whereQuery.time = { gt: new Date(time) }
+    }
+    console.log(whereQuery);
+    
+
+    const logs = await PrismaClient.log.findMany({
+        where: whereQuery,
+        orderBy: {
+            time: "asc"
+        },
+        select: {
+            log: true, time: true
+        }
+    })
+    return res.json({ status: true, data: { logs } })
+})
+
+app.post('/api/deployment/logs', async (req: Request, res: Response) => {
+    const { logs } = req.body
+    console.log(logs);
+    await PrismaClient.log.createMany({
+        data: logs
+    })
+    return res.json({ status: true, message: "Logs added successfully" })
+})
 
 app.listen(8000, () => {
     console.log("Listening on port 8000");

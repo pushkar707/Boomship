@@ -18,9 +18,9 @@ export default function Home() {
 
     const res = await axios.post(process.env.NEXT_PUBLIC_API_URL + "/project", { gitUrl, buildCommand, baseDirectory, env: envKeys })
     const data = await res.data
-    window.location.href = "/deployment/" + data.projectId
+    window.location.href = `/project/${data.subdomain}/${data.deploymentId}`
   }
-
+  
   return (
     <Container component={"form"} onSubmit={handleSubmit} sx={{ p: 4, height: "100vh", width: "100vw", display: "flex", justifyContent: "center", alignItems: "center", gap: 3, flexDirection: "column" }}>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 3, width: { xs: "100%", md: "50%", } }} >
@@ -30,6 +30,7 @@ export default function Home() {
           sx={{ width: "100%" }}
           value={gitUrl}
           onChange={(e) => setGitUrl(e.target.value)}
+          required
         />
 
         <TextField

@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.658.0",
+    "axios": "^1.7.7",
     "dockerode": "^4.0.2",
     "dotenv": "^16.4.5",
     "mime-types": "^2.1.35",
