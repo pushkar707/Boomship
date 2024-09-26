@@ -8,8 +8,6 @@ import { DeploymentStatus } from "@prisma/client";
 dotenv.config()
 
 const redisClient = new Redis(process.env.REDIS_URL || 'localhost:6379')
-
-
 const app = express();
 
 app.use(express.json());
@@ -82,6 +80,7 @@ app.get("/api/deployment/:id/logs", async (req: Request, res: Response) => {
 })
 
 app.post('/api/deployment/logs', async (req: Request, res: Response) => {
+    // upload multiple logs at once, logs can belong to different deployments
     const { logs } = req.body
     console.log(logs);
     await PrismaClient.log.createMany({

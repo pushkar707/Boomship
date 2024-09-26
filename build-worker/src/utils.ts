@@ -7,22 +7,27 @@ dotenv.config()
 
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
 import { Container } from "dockerode";
+import { exec } from "child_process";
 
 export async function copyFilesFromContainer(container: Container, containerPath: string, hostPath: string) {
-    const tarStream = await container.getArchive({ path: containerPath }); // getting files from docker container in .tar stream
-    tarStream.pipe(tar.extract(path.resolve(hostPath)));
+    try {
+        const tarStream = await container.getArchive({ path: containerPath }); // getting files from docker container in .tar stream
+        tarStream.pipe(tar.extract(path.resolve(hostPath)));
 
-    return new Promise<void>((resolve, reject) => {
-        tarStream.on('end', () => {
-            console.log('Files copied from container successfully');
-            resolve();
-        });
+        return new Promise<void>((resolve, reject) => {
+            tarStream.on('end', () => {
+                console.log('Files copied from container successfully');
+                resolve();
+            });
 
-        tarStream.on('error', (err: any) => {
-            console.error('Error copying files from container:', err);
-            reject(err);
+            tarStream.on('error', (err: any) => {
+                console.error('Error copying files from container:', err);
+                reject(err);
+            });
         });
-    });
+    }catch(e){
+        return false
+    }
 }
 
 const s3Client = new S3Client({

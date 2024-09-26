@@ -39,7 +39,7 @@ const init = async () => {
             axios.patch(`${API_SERVER}/api/deployment/${deploymentId}`, {
                 status: 'PROGRESS'
             })
-            const envValue = [`GIT_REPOSITORY_URL=${gitUrl}`, `DEPLOYMENT_ID=${deploymentId}`, `REDIS_URL=${process.env.REDIS_URL}`,`API_SERVER=${API_SERVER}`, `SUB_DOMAIN=${subdomain}`, `BUILD_COMMAND=${buildCommand}`, `BASE_DIRECTORY=${baseDirectory}`]
+            const envValue = [`GIT_REPOSITORY_URL=${gitUrl}`, `DEPLOYMENT_ID=${deploymentId}`, `REDIS_URL=${process.env.REDIS_URL}`, `API_SERVER=${API_SERVER}`, `SUB_DOMAIN=${subdomain}`, `BUILD_COMMAND=${buildCommand}`, `BASE_DIRECTORY=${baseDirectory}`]
 
             usersEnv && usersEnv.forEach(({ key, value }: { key: string, value: string }) => {
                 envValue.push(`${key}=${value}`)
@@ -60,9 +60,19 @@ const init = async () => {
             const { SUB_DOMAIN, containerId, deploymentId } = JSON.parse(build)
 
             const container = await docker.getContainer(containerId);
-            await copyFilesFromContainer(container, '/home/app/output/dist', path.join(__dirname, "/outputs/" + SUB_DOMAIN));
+            const files = await copyFilesFromContainer(container, '/home/app/output/dist', path.join(__dirname, "/outputs/" + SUB_DOMAIN));
+            if (!files) {
+                await axios.post(`${API_SERVER}/api/deployment/logs`, {
+                    logs: [{ log: `Could not build the application.`, deploymentId: parseInt(deploymentId), time: new Date(Date.now()) }]
+                })
+                await axios.patch(`${API_SERVER}/api/deployment/${deploymentId}`, {
+                    status: 'FAIL'
+                })
+            }
+
             await container.stop();
             await container.remove();
+            if (!files) return
 
             await uploadToS3(SUB_DOMAIN)
             await axios.post(`${API_SERVER}/api/deployment/logs`, {
