@@ -39,7 +39,7 @@ const init = async () => {
             axios.patch(`${API_SERVER}/api/deployment/${deploymentId}`, {
                 status: 'PROGRESS'
             })
-            const envValue = [`GIT_REPOSITORY_URL=${gitUrl}`, `DEPLOYMENT_ID=${deploymentId}`, `API_SERVER=${API_SERVER}`, `SUB_DOMAIN=${subdomain}`, `BUILD_COMMAND=${buildCommand}`, `BASE_DIRECTORY=${baseDirectory}`]
+            const envValue = [`GIT_REPOSITORY_URL=${gitUrl}`, `DEPLOYMENT_ID=${deploymentId}`, `REDIS_URL=${process.env.REDIS_URL}`,`API_SERVER=${API_SERVER}`, `SUB_DOMAIN=${subdomain}`, `BUILD_COMMAND=${buildCommand}`, `BASE_DIRECTORY=${baseDirectory}`]
 
             usersEnv && usersEnv.forEach(({ key, value }: { key: string, value: string }) => {
                 envValue.push(`${key}=${value}`)

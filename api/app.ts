@@ -7,10 +7,7 @@ import PrismaClient from "./utils/PrismaClient";
 import { DeploymentStatus } from "@prisma/client";
 dotenv.config()
 
-const redisClient = new Redis({
-    host: '127.0.0.1',
-    port: 6379,
-})
+const redisClient = new Redis(process.env.REDIS_URL || 'localhost:6379')
 
 
 const app = express();

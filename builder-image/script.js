@@ -15,10 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const child_process_1 = require("child_process");
 const path_1 = __importDefault(require("path"));
 const ioredis_1 = __importDefault(require("ioredis"));
-const redisClient = new ioredis_1.default({
-    host: '192.168.0.104',
-    port: 6379,
-});
+const redisClient = new ioredis_1.default(process.env.REDIS_URL || 'localhost:6379');
 const SUB_DOMAIN = process.env.SUB_DOMAIN;
 const DEPLOYMENT_ID = process.env.DEPLOYMENT_ID;
 const publishLog = (log) => {

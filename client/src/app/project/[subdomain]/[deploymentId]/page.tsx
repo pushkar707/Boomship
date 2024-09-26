@@ -27,7 +27,7 @@ const Page = ({ params }: any) => {
 
     if (data.status) {
       data.data.logs.length && setLogs(prev => [...prev, ...data.data.logs])
-      if (data.data.status === 'READY') {
+      if (['READY', 'ERROR'].includes(data.data.status)) {
         console.log("FSdxzv df");
         clearInterval(logsFetchingInterval.current)
       }
