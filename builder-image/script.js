@@ -41,7 +41,7 @@ function init() {
         (_c = p === null || p === void 0 ? void 0 : p.stdout) === null || _c === void 0 ? void 0 : _c.on('close', () => __awaiter(this, void 0, void 0, function* () {
             var _d;
             publishLog('Build Completed');
-            yield redisClient.lpush('builds', JSON.stringify({ SUB_DOMAIN, containerId: process.env.HOSTNAME }));
+            yield redisClient.lpush('builds', JSON.stringify({ SUB_DOMAIN, containerId: process.env.HOSTNAME, deploymentId: DEPLOYMENT_ID }));
             // @ts-ignore
             (_d = p === null || p === void 0 ? void 0 : p.stdin) === null || _d === void 0 ? void 0 : _d.resume(); // to allow workers to copy files before container closes
         }));

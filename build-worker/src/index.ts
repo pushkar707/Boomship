@@ -7,6 +7,7 @@ import axios from "axios"
 dotenv.config()
 
 const API_SERVER = process.env.API_SERVER
+const PROXY_SERVER = process.env.PROXY_SERVER
 const LOGS_BATCH_SIZE = 100;
 
 const redisClient = createClient({ url: process.env.REDIS_URL })
@@ -57,7 +58,7 @@ const init = async () => {
 
         const build = await redisClient.rPop("builds")
         if (build) {
-            const { SUB_DOMAIN, containerId } = JSON.parse(build)
+            const { SUB_DOMAIN, containerId, deploymentId } = JSON.parse(build)
 
             const container = await docker.getContainer(containerId);
             await copyFilesFromContainer(container, '/home/app/output/dist', path.join(__dirname, "/outputs/" + SUB_DOMAIN));
@@ -65,6 +66,9 @@ const init = async () => {
             await container.remove();
 
             await uploadToS3(SUB_DOMAIN)
+            await axios.post(`${API_SERVER}/api/deployment/logs`, {
+                logs: [{ log: `Your service is live at ${SUB_DOMAIN}.${PROXY_SERVER}`, deploymentId: parseInt(deploymentId), time: new Date(Date.now()) }]
+            })
         }
     }
 }

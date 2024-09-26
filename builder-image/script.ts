@@ -41,7 +41,7 @@ async function init() {
     publishLog('Build Completed');
     await redisClient.lpush(
       'builds',
-      JSON.stringify({ SUB_DOMAIN, containerId: process.env.HOSTNAME })
+      JSON.stringify({ SUB_DOMAIN, containerId: process.env.HOSTNAME, deploymentId: DEPLOYMENT_ID })
     );
     // @ts-ignore
     p?.stdin?.resume(); // to allow workers to copy files before container closes
