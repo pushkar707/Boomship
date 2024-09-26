@@ -56,26 +56,32 @@ app.patch('/api/deployment/:id', async (req: Request, res: Response) => {
 })
 
 app.get("/api/deployment/:id/logs", async (req: Request, res: Response) => {
-    const { id } = req.params
+    const id = parseInt(req.params.id)
     const { toContinue, time } = req.query as { toContinue: string, time: string }
 
-    const whereQuery: any = { deploymentId: parseInt(id) }
+    const whereQuery: any = {};
     if (toContinue == "true") {
         whereQuery.time = { gt: new Date(time) }
     }
-    console.log(whereQuery);
-    
 
-    const logs = await PrismaClient.log.findMany({
-        where: whereQuery,
-        orderBy: {
-            time: "asc"
-        },
+    const deployment = await PrismaClient.deployment.findFirst({
+        where: { id },
         select: {
-            log: true, time: true
+            status: true,
+            logs: {
+                where: whereQuery,
+                select: {
+                    time: true, log: true
+                }
+            }
         }
     })
-    return res.json({ status: true, data: { logs } })
+
+    if (!deployment)
+        return res.json({ status: false, message: 'Deployment not found' })
+
+    const { logs, status } = deployment
+    return res.json({ status: true, data: { logs, status } })
 })
 
 app.post('/api/deployment/logs', async (req: Request, res: Response) => {

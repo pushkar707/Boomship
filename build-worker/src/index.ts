@@ -25,7 +25,6 @@ const init = async () => {
             const { deploymentId, log, time } = currLog
             return { deploymentId: parseInt(deploymentId), log, time: new Date(time) }
         })
-        console.log(logs);
 
         logs.length && await axios.post(`${API_SERVER}/api/deployment/logs`, {
             logs
@@ -68,6 +67,9 @@ const init = async () => {
             await uploadToS3(SUB_DOMAIN)
             await axios.post(`${API_SERVER}/api/deployment/logs`, {
                 logs: [{ log: `Your service is live at ${SUB_DOMAIN}.${PROXY_SERVER}`, deploymentId: parseInt(deploymentId), time: new Date(Date.now()) }]
+            })
+            await axios.patch(`${API_SERVER}/api/deployment/${deploymentId}`, {
+                status: 'READY'
             })
         }
     }
