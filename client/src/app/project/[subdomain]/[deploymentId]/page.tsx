@@ -21,7 +21,7 @@ const Page = ({ params }: any) => {
   const fetchLogs = async () => {
     const logs = logsRef.current
     const lastLogTime = logs && encodeURIComponent(logs[logs.length - 1]?.time)
-    const res = await axios.get(`http://localhost:8000/api/deployment/${deploymentId}/logs${logs?.length ? `?toContinue=true&time=${lastLogTime}` : ''}`)
+    const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/deployment/${deploymentId}/logs${logs?.length ? `?toContinue=true&time=${lastLogTime}` : ''}`)
     const data = res.data
     console.log(data);
 

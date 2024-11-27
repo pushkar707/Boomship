@@ -16,6 +16,7 @@ const init = async () => {
     await redisClient.connect()
     console.log("Build server started");
 
+    // Every 4 seconds retrieve logs that are being thrown to redis by docker containers
     setInterval(async () => {
         const replies = await redisClient.multi()
             .lRange('build-logs', 0, LOGS_BATCH_SIZE - 1)
@@ -26,6 +27,7 @@ const init = async () => {
             return { deploymentId: parseInt(deploymentId), log, time: new Date(time) }
         })
 
+        // API to update logs in DB, there's another API that client calls to fetch the logs
         logs.length && await axios.post(`${API_SERVER}/api/deployment/logs`, {
             logs
         })
@@ -33,6 +35,7 @@ const init = async () => {
     }, 4000);
 
     while (true) {
+        // Start docker container for deployments
         const deployment = await redisClient.rPop("deployments")
         if (deployment) {
             const { gitUrl, subdomain, buildCommand, baseDirectory, usersEnv, deploymentId }: any = JSON.parse(deployment)
@@ -55,6 +58,7 @@ const init = async () => {
             console.log("Container started");
         }
 
+        // Copy build files from container upon build completion, and uploads them to AWS S3
         const build = await redisClient.rPop("builds")
         if (build) {
             const { SUB_DOMAIN, containerId, deploymentId } = JSON.parse(build)
