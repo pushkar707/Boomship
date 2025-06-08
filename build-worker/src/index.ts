@@ -76,7 +76,6 @@ const init = async () => {
 
             await container.stop();
             await container.remove();
-            if (!files) return
 
             await uploadToS3(SUB_DOMAIN)
             await axios.post(`${API_SERVER}/api/deployment/logs`, {

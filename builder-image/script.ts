@@ -3,7 +3,10 @@ import path from 'path';
 import fs from 'fs';
 import Redis from 'ioredis';
 
-const redisClient = new Redis(process.env.REDIS_URL || 'localhost:6379');
+const redisClient = new Redis({
+  host: 'host.docker.internal',
+  port: 6379
+});
 
 const SUB_DOMAIN = process.env.SUB_DOMAIN;
 const DEPLOYMENT_ID = process.env.DEPLOYMENT_ID;
